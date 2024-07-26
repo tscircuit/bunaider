@@ -6,6 +6,7 @@ import * as fs from "node:fs"
 import * as path from "node:path"
 import { Octokit } from "@octokit/rest"
 import packageJson from "./package.json"
+import { RestEndpointMethodTypes } from "@octokit/plugin-rest-endpoint-methods"
 
 function escapeShell(cmd) {
   return '"' + cmd.replace(/(["$`\\])/g, "\\$1") + '"'
@@ -55,11 +56,68 @@ async function getIssueInfo(issueNumber, repoInfo) {
   }
 }
 
-async function createPullRequest(branchName, issueNumber, repoInfo) {
+async function commentOnIssue(issueNumber: number, pullRequestUrl: string, repoInfo: any) {
+  const commentBody = `A pull request has been created to address this issue: ${pullRequestUrl}`;
+
+  try {
+    if (repoInfo.useOctokit) {
+      console.log("Attempting to comment on issue using Octokit...");
+      const { data: comments } = await repoInfo.octokit.issues.listComments({
+        owner: repoInfo.owner,
+        repo: repoInfo.repo,
+        issue_number: issueNumber,
+      });
+
+      const existingComment = comments.find(comment => 
+        comment.body.includes("A pull request has been created to address this issue:")
+      );
+
+      if (existingComment) {
+        await repoInfo.octokit.issues.updateComment({
+          owner: repoInfo.owner,
+          repo: repoInfo.repo,
+          comment_id: existingComment.id,
+          body: commentBody,
+        });
+        console.log("Existing comment updated on the issue.");
+      } else {
+        await repoInfo.octokit.issues.createComment({
+          owner: repoInfo.owner,
+          repo: repoInfo.repo,
+          issue_number: issueNumber,
+          body: commentBody,
+        });
+        console.log("New comment added to the issue.");
+      }
+    } else {
+      console.log("Commenting on issue using GitHub CLI...");
+      const existingComments = JSON.parse(
+        execSync(`gh issue view ${issueNumber} --json comments`).toString()
+      ).comments;
+
+      const existingComment = existingComments.find((comment: any) => 
+        comment.body.includes("A pull request has been created to address this issue:")
+      );
+
+      if (existingComment) {
+        execSync(`gh issue comment ${issueNumber} --edit-last "${commentBody}"`);
+        console.log("Existing comment updated on the issue.");
+      } else {
+        execSync(`gh issue comment ${issueNumber} --body "${commentBody}"`);
+        console.log("New comment added to the issue.");
+      }
+    }
+  } catch (error: any) {
+    console.error("Error commenting on issue:", error.message);
+  }
+}
+
+async function createPullRequest(branchName: string, issueNumber: number, repoInfo: any) {
   const title = `Fix for issue #${issueNumber}`
   const body = `This pull request addresses issue #${issueNumber}.\n\nChanges were made automatically by aider. Please review the changes carefully before merging.`
 
   try {
+    let pullRequestUrl: string;
     if (repoInfo.useOctokit) {
       console.log("Attempting to create pull request using Octokit...")
       try {
@@ -71,25 +129,30 @@ async function createPullRequest(branchName, issueNumber, repoInfo) {
           base: "main",
           body: body,
         })
-        console.log(`Pull request created: ${pullRequest.html_url}`)
-        return
+        pullRequestUrl = pullRequest.html_url;
+        console.log(`Pull request created: ${pullRequestUrl}`)
       } catch (octoError: any) {
         console.error(
           "Error creating pull request with Octokit:",
           octoError.message,
         )
         console.log("Falling back to GitHub CLI...")
+        throw octoError;
       }
+    } else {
+      // If Octokit fails or isn't used, try GitHub CLI
+      console.log("Creating pull request using GitHub CLI...")
+      const escapedBody = escapeShell(body)
+      const shellCmd = `gh pr create --title ${escapeShell(title)} --body ${escapedBody} --base main`
+      console.log("Executing:", shellCmd)
+      pullRequestUrl = execSync(shellCmd, { encoding: 'utf8' }).trim();
+      console.log("Pull request created. Please check your GitHub repository.")
+      console.log(pullRequestUrl)
     }
 
-    // If Octokit fails or isn't used, try GitHub CLI
-    console.log("Creating pull request using GitHub CLI...")
-    const escapedBody = escapeShell(body)
-    const shellCmd = `gh pr create --title ${escapeShell(title)} --body ${escapedBody} --base main`
-    console.log("Executing:", shellCmd)
-    const result = execSync(shellCmd, { stdio: "inherit", env: process.env })
-    console.log("Pull request created. Please check your GitHub repository.")
-    console.log(result.toString())
+    // Comment on the original issue with the pull request link
+    await commentOnIssue(issueNumber, pullRequestUrl, repoInfo);
+
   } catch (error: any) {
     console.error("Error creating pull request:", error.message)
     if (error.response) {
