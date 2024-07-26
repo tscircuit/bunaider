@@ -2,6 +2,7 @@
   "name": "bunaider",
   "main": "dist/main.js",
   "version": "0.0.9",
+  "type": "module",
   "files": [
     "dist"
   ],
@@ -9,7 +10,7 @@
     "bunaider": "dist/main.js"
   },
   "scripts": {
-    "build": "tsup main.ts --dts --sourcemap"
+    "build": "tsup main.ts --dts --sourcemap --format esm"
   },
   "devDependencies": {
     "@types/bun": "latest",
