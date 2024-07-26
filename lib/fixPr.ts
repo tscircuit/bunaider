@@ -2,6 +2,8 @@ import { execSync } from "child_process"
 import { escapeShell } from "./escapeShell"
 import { getIssueInfo } from "./getIssueInfo"
 import { scanPullRequestComments } from "./scanPullRequestComments"
+import { configureOrigin } from "./configureOrigin"
+import { simpleGit, type SimpleGit } from "simple-git"
 
 export async function fixPr(prNumber, repoInfo) {
   try {
@@ -85,7 +87,10 @@ export async function fixPr(prNumber, repoInfo) {
 
     // 6. Push the branch to the remote
     const branchName = pr.headRefName
-    execSync(`git push origin ${branchName}`)
+    const git: SimpleGit = simpleGit(".")
+
+    configureOrigin(git)
+    await git.push("origin", branchName)
 
     console.log(`Changes have been pushed to the branch '${branchName}'.`)
     console.log("Please review the changes and update the PR if necessary.")
