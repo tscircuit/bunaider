@@ -25,7 +25,12 @@ export async function fixPr(prNumber, repoInfo) {
     }
 
     // Make sure we're on the PR branch
-    execSync(`git checkout ${pr.headRefName}`)
+    try {
+      execSync(`git checkout ${pr.headRefName}`)
+    } catch (error: any) {
+      console.error("Error checking out the PR branch:", error.message)
+      console.log("assuming we're already on the branch...")
+    }
 
     // 2. Get all the review comments that start with "aider: "
     const comments = await scanPullRequestComments(prNumber, repoInfo)

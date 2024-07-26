@@ -64,7 +64,6 @@ program
     } else {
       // Check if the PR has "Request Changes" with "aider: " in the comment
       const comments = await scanPullRequestComments(issueNumber, repoInfo)
-      console.log(comments)
       const hasRequestChanges = comments.some(
         (comment) =>
           comment.body.includes("aider:") &&
