@@ -43,10 +43,12 @@ For GitHub integration, you can use either:
 
 ## GitHub Actions Integration
 
-Bunaider is designed to work seamlessly with GitHub Actions. Here's an example workflow that automatically creates a pull request for any issue labeled with 'aider':
+Bunaider is designed to work seamlessly with GitHub Actions. Here are two example workflows: one for automatically creating a pull request for any issue labeled with 'aider', and another for responding to pull request review comments.
+
+### Auto-Fix Issues
 
 ```yaml
-name: Bunaider Auto-Fix
+name: Bunaider Auto-Fix Issue
 on:
   issues:
     types: [labeled]
@@ -81,6 +83,47 @@ This workflow will:
 2. Check if the label is 'aider'
 3. Set up the environment with Bun and bunaider
 4. Run `bunaider fix` on the labeled issue
+
+### Respond to PR Review Comments
+
+```yaml
+name: Bunaider PR Review Response
+on:
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  respond-to-review:
+    if: github.event.review.state == 'changes_requested' && contains(github.event.review.body, 'aider:')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+
+      - name: Install bunaider
+        run: bun install -g bunaider
+
+      - run: bunaider init
+
+      - name: Run bunaider fix on PR
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          AIDER_SONNET: 1
+        run: bunaider fix ${{ github.event.pull_request.number }}
+```
+
+This workflow will:
+
+1. Trigger when a pull request review is submitted
+2. Check if the review requests changes and contains 'aider:' in the comment
+3. Set up the environment with Bun and bunaider
+4. Run `bunaider fix` on the pull request number
+
+These workflows demonstrate how bunaider can be used to automatically fix issues and respond to pull request review comments in your GitHub repository.
 
 ## Local Development
 

@@ -1,6 +1,9 @@
 import { execSync } from "node:child_process"
 
-export async function isIssueOrPr(issueNumber, repoInfo) {
+export async function isIssueOrPr(
+  issueNumber,
+  repoInfo,
+): Promise<"issue" | "pr"> {
   if (repoInfo.useOctokit && repoInfo.octokit) {
     try {
       const { data: pr } = await repoInfo.octokit.pulls.get({
@@ -8,16 +11,18 @@ export async function isIssueOrPr(issueNumber, repoInfo) {
         repo: repoInfo.repo,
         pull_number: parseInt(issueNumber),
       })
-      return true
+      return "pr"
     } catch (error: any) {
-      return false
+      console.log("Error fetching PR:", error.message)
+      return "issue"
     }
   } else {
     try {
       execSync(`gh pr view ${issueNumber} --json id`)
-      return true
+      return "pr"
     } catch (error: any) {
-      return false
+      console.log("Error fetching PR:", error.message)
+      return "issue"
     }
   }
 }

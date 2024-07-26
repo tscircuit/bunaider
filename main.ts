@@ -9,6 +9,9 @@ import packageJson from "./package.json"
 import { getRepoInfo } from "./lib/getRepoInfo"
 import { fixIssue } from "./lib/fixIssue"
 import { isIssueOrPr } from "./lib/isIssueOrPr"
+import { fixPr } from "./lib/fixPr"
+import { scanPullRequestComments } from "./lib/scanPullRequestComments"
+import ms from "ms"
 
 program
   .name("bunaider")
@@ -45,16 +48,42 @@ program
 
 program
   .command("fix <issue-or-pr-number>")
-  .description("Load a github issue and attempt to solve with aider")
+  .description("Load a github issue or PR and attempt to solve with aider")
   .action(async (issueNumber) => {
     console.log(`Attempting to fix issue/pr #${issueNumber}...`)
 
     const repoInfo = await getRepoInfo()
 
-    const isIssue = await isIssueOrPr(issueNumber, repoInfo)
+    const isIssue = (await isIssueOrPr(issueNumber, repoInfo)) === "issue"
+    console.log(
+      `Determined #${issueNumber} is ${isIssue ? "an issue" : "a pull request"}`,
+    )
 
     if (isIssue) {
       await fixIssue(issueNumber, repoInfo)
+    } else {
+      // Check if the PR has "Request Changes" with "aider: " in the comment
+      const comments = await scanPullRequestComments(issueNumber, repoInfo)
+      const hasRequestChanges = comments.some(
+        (comment) =>
+          comment.body.includes("aider:") &&
+          // Less than 5 minutes old
+          new Date(comment.submittedAt).valueOf() >
+            ms(
+              process.env.BUNAIDER_STALE_COMMENT_TIME || Date.now() - 5 * 60000,
+            ),
+      )
+
+      if (hasRequestChanges) {
+        console.log(
+          "Recent comments with 'aider:' text found. Attempting PR fix.",
+        )
+        await fixPr(issueNumber, repoInfo)
+      } else {
+        console.log(
+          "No recent comments with 'aider:' text found. Skipping PR fix.",
+        )
+      }
     }
   })
 
