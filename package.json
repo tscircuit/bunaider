@@ -1,12 +1,12 @@
 {
   "name": "bunaider",
-  "main": "dist/main.cjs",
+  "main": "dist/main.js",
   "version": "0.0.8",
   "files": [
     "dist"
   ],
   "bin": {
-    "bunaider": "dist/main.cjs"
+    "bunaider": "dist/main.js"
   },
   "scripts": {
     "build": "tsup main.ts --dts --sourcemap"
