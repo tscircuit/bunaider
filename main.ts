@@ -83,8 +83,9 @@ async function createPullRequest(branchName, issueNumber, repoInfo) {
 
     // If Octokit fails or isn't used, try GitHub CLI
     console.log("Creating pull request using GitHub CLI...")
+    const escapedBody = escapeShell(body)
     const result = execSync(
-      `gh pr create --title "${title}" --body "${body}" --base main`,
+      `gh pr create --title "${title}" --body "${escapedBody}" --base main`,
       { stdio: "inherit" },
     )
     console.log("Pull request created. Please check your GitHub repository.")
