@@ -13,6 +13,7 @@
     "build": "tsup main.ts --dts --sourcemap --format esm"
   },
   "devDependencies": {
+    "@octokit/webhooks-types": "^7.5.1",
     "@types/bun": "latest",
     "tsup": "^8.2.3"
   },
