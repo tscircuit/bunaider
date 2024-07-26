@@ -6,6 +6,7 @@ import * as fs from "node:fs"
 import * as path from "node:path"
 import { Octokit } from "@octokit/rest"
 import packageJson from "./package.json"
+import { PullRequest, PullRequestComment } from "@octokit/webhooks-types"
 
 function escapeShell(cmd) {
   return '"' + cmd.replace(/(["$`\\])/g, "\\$1") + '"'
@@ -39,20 +40,47 @@ async function getRepoInfo() {
   }
 }
 
-async function getIssueInfo(issueNumber, repoInfo) {
+async function getIssueOrPullRequestInfo(number, repoInfo) {
+  try {
+    return await getIssueInfo(number, repoInfo)
+  } catch (error) {
+    return await getPullRequestInfo(number, repoInfo)
+  }
+}
+
+async function getPullRequestInfo(prNumber, repoInfo) {
   if (repoInfo.useOctokit) {
-    const { data: issue } = await repoInfo.octokit.issues.get({
+    const { data: pr } = await repoInfo.octokit.pulls.get({
       owner: repoInfo.owner,
       repo: repoInfo.repo,
-      issue_number: parseInt(issueNumber),
+      pull_number: parseInt(prNumber),
     })
-    return { title: issue.title, body: issue.body }
+    return { title: pr.title, body: pr.body, number: pr.number }
   } else {
-    const issueInfo = JSON.parse(
-      execSync(`gh issue view ${issueNumber} --json title,body`).toString(),
+    const prInfo = JSON.parse(
+      execSync(`gh pr view ${prNumber} --json title,body,number`).toString(),
     )
-    return issueInfo
+    return prInfo
   }
+}
+
+async function scanPullRequestComments(prNumber, repoInfo) {
+  let comments: PullRequestComment[] = []
+  if (repoInfo.useOctokit) {
+    const { data } = await repoInfo.octokit.pulls.listReviewComments({
+      owner: repoInfo.owner,
+      repo: repoInfo.repo,
+      pull_number: parseInt(prNumber),
+    })
+    comments = data
+  } else {
+    const commentsJson = execSync(
+      `gh pr view ${prNumber} --json comments`,
+    ).toString()
+    comments = JSON.parse(commentsJson).comments
+  }
+
+  return comments.filter((comment) => comment.body.startsWith("aider: "))
 }
 
 async function createPullRequest(branchName, issueNumber, repoInfo) {
@@ -138,32 +166,47 @@ program
   })
 
 program
-  .command("fix <issue-number>")
-  .description("Load a github issue and attempt to solve with aider")
-  .action(async (issueNumber) => {
-    console.log(`Attempting to fix issue #${issueNumber}...`)
+  .command("fix <number>")
+  .description("Load a GitHub issue or pull request and attempt to solve with aider")
+  .action(async (number) => {
+    console.log(`Attempting to fix issue/PR #${number}...`)
 
     try {
       const repoInfo = await getRepoInfo()
 
-      console.log(`Fetching issue #${issueNumber} from GitHub...`)
-      const { title, body } = await getIssueInfo(issueNumber, repoInfo)
+      console.log(`Fetching issue/PR #${number} from GitHub...`)
+      const { title, body } = await getIssueOrPullRequestInfo(number, repoInfo)
 
-      const issueContent = `Issue #${issueNumber}: ${title}\n\n${body}`
-      console.log("Issue content:", issueContent)
+      let content = `Issue/PR #${number}: ${title}\n\n${body}`
+
+      // Check if it's a pull request and scan for comments
+      try {
+        const prComments = await scanPullRequestComments(number, repoInfo)
+        if (prComments.length > 0) {
+          content += "\n\nPull Request Comments:\n"
+          prComments.forEach((comment) => {
+            content += `${comment.path ? `File: ${comment.path}\n` : ''}${comment.body}\n\n`
+          })
+        }
+      } catch (error) {
+        // If this fails, it's likely because it's an issue, not a PR
+        console.log("No pull request comments found or this is an issue.")
+      }
+
+      console.log("Content:", content)
 
       console.log("Running aider to attempt a fix...")
-      const escapedIssueContent = escapeShell(issueContent)
-      const aiderCommand = `aider --yes --message ${escapedIssueContent}`
+      const escapedContent = escapeShell(content)
+      const aiderCommand = `aider --yes --message ${escapedContent}`
 
       execSync(aiderCommand, {
         stdio: "inherit",
         env: process.env,
       })
 
-      console.log("Aider has completed its attempt to fix the issue.")
+      console.log("Aider has completed its attempt to fix the issue/PR.")
 
-      const branchName = `aider-fix-issue-${issueNumber}`
+      const branchName = `aider-fix-${number}`
       try {
         execSync(`git branch -D ${branchName}`)
       } catch (error: any) {}
