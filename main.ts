@@ -132,10 +132,23 @@ program
       console.log("Aider has completed its attempt to fix the issue.")
 
       const branchName = `aider-fix-issue-${issueNumber}`
-      execSync(`git checkout -b ${branchName}`)
-      execSync("git add .")
-      execSync(`git commit -m "Fix issue #${issueNumber}"`)
-      execSync(`git push origin ${branchName}`)
+      try {
+        execSync(`git branch -D ${branchName}`)
+      } catch (error: any) {}
+      try {
+        execSync(`git checkout -b ${branchName}`)
+      } catch (error: any) {}
+      // Ensure that we're on the branchName by asking git what branch we're on
+
+      const currentBranch = execSync("git rev-parse --abbrev-ref HEAD")
+        .toString()
+        .trim()
+      if (currentBranch !== branchName) {
+        console.error(
+          `Error: Could not switch to branch ${branchName}. Please check your Git configuration and try again.`,
+        )
+        process.exit(1)
+      }
 
       await createPullRequest(branchName, issueNumber, repoInfo)
 
