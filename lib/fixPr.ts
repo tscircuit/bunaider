@@ -89,7 +89,7 @@ export async function fixPr(prNumber, repoInfo) {
     const branchName = pr.headRefName
     const git: SimpleGit = simpleGit(".")
 
-    configureOrigin(git)
+    await configureOrigin(git)
     await git.push("origin", branchName)
 
     console.log(`Changes have been pushed to the branch '${branchName}'.`)
