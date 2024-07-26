@@ -131,7 +131,7 @@ program
 
       console.log("Aider has completed its attempt to fix the issue.")
 
-      const branchName = `fix-issue-${issueNumber}`
+      const branchName = `aider-fix-issue-${issueNumber}`
       execSync(`git checkout -b ${branchName}`)
       execSync("git add .")
       execSync(`git commit -m "Fix issue #${issueNumber}"`)
