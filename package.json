@@ -1,9 +1,17 @@
 {
   "name": "bunaider",
-  "module": "index.ts",
+  "main": "dist/main.cjs",
+  "version": "0.0.1",
   "type": "module",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup main.ts --dts --sourcemap"
+  },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "tsup": "^8.2.3"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
