@@ -8,14 +8,18 @@ export async function fixPr(prNumber, repoInfo) {
     console.log(`Fetching PR #${prNumber} from GitHub...`)
 
     // 1. Fetch the PR
-    let pr
+    let pr: { headRefName: string; body: string; title: string }
     if (repoInfo.useOctokit) {
       const { data } = await repoInfo.octokit.pulls.get({
         owner: repoInfo.owner,
         repo: repoInfo.repo,
         pull_number: parseInt(prNumber),
       })
-      pr = data
+      pr = {
+        headRefName: data.head.ref,
+        body: data.body,
+        title: data.title,
+      }
     } else {
       pr = JSON.parse(
         execSync(
@@ -47,7 +51,7 @@ export async function fixPr(prNumber, repoInfo) {
     let issueInfo: any = null
     let issueNumber: number | null = null
     if (issueNumberMatch) {
-      issueNumber = issueNumberMatch[1]
+      issueNumber = parseInt(issueNumberMatch[1])
       issueInfo = await getIssueInfo(issueNumber, repoInfo)
     }
 

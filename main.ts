@@ -49,7 +49,8 @@ program
 program
   .command("fix <issue-or-pr-number>")
   .description("Load a github issue or PR and attempt to solve with aider")
-  .action(async (issueNumber) => {
+  .option("-f, --no-skip", "Force fixing the issue/PR (disable skipping)")
+  .action(async (issueNumber, { skip: allowSkip }) => {
     console.log(`Attempting to fix issue/pr #${issueNumber}...`)
 
     const repoInfo = await getRepoInfo()
@@ -73,7 +74,7 @@ program
             Date.now() - ms(process.env.BUNAIDER_STALE_COMMENT_TIME || "5m"),
       )
 
-      if (hasRequestChanges) {
+      if (hasRequestChanges || allowSkip === false) {
         console.log(
           "Recent comments with 'aider:' text found. Attempting PR fix.",
         )
