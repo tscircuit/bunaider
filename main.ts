@@ -68,6 +68,7 @@ program
         (comment) =>
           comment.body.includes("aider:") &&
           // Less than 5 minutes old
+          comment.submittedAt &&
           new Date(comment.submittedAt).valueOf() >
             ms(
               process.env.BUNAIDER_STALE_COMMENT_TIME || Date.now() - 5 * 60000,
