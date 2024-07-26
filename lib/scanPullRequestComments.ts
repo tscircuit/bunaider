@@ -1,7 +1,7 @@
 import type { PullRequestReviewComment } from "@octokit/webhooks-types"
 import { execSync } from "child_process"
 
-async function scanPullRequestComments(prNumber, repoInfo) {
+export async function scanPullRequestComments(prNumber, repoInfo) {
   let comments: PullRequestReviewComment[] = []
   if (repoInfo.useOctokit) {
     const { data } = await repoInfo.octokit.pulls.listReviewComments({
