@@ -6,6 +6,9 @@
   "files": [
     "dist"
   ],
+  "bin": {
+    "bunaider": "dist/main.cjs"
+  },
   "scripts": {
     "build": "tsup main.ts --dts --sourcemap"
   },
