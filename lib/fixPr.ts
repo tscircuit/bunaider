@@ -33,8 +33,8 @@ export async function fixPr(prNumber, repoInfo) {
       .filter((comment) => comment.body.includes("aider: "))
       .map((comment) => {
         // Add filename to to the comment
-        const filename = comment.path ?? ""
-        return `${filename}: ${comment.body.substring(7)}`
+        const filename = (comment as any).path ?? ""
+        return `${filename ? `${filename}: ` : ""}${comment.body.substring(7)}`
       }) // Remove "aider: " prefix
 
     // 3. Get the original issue the PR is fixing
