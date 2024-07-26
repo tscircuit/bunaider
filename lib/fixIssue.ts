@@ -2,6 +2,7 @@ import { execSync } from "node:child_process"
 import { getIssueInfo } from "./getIssueInfo"
 import { escapeShell } from "./escapeShell"
 import { createPullRequest } from "./createPullRequest"
+import { commentOnIssue } from "./commentOnIssue"
 
 export const fixIssue = async (issueNumber, repoInfo) => {
   try {
@@ -46,7 +47,10 @@ export const fixIssue = async (issueNumber, repoInfo) => {
 
     // If we are fixing an issue, create a PR, if we're fixing a pull request, push the commit
 
-    await createPullRequest(branchName, issueNumber, repoInfo)
+    const pullRequestUrl = await createPullRequest(branchName, issueNumber, repoInfo)
+
+    // Comment on the original issue with the workflow link
+    await commentOnIssue(issueNumber, pullRequestUrl, repoInfo)
 
     console.log("Please review the changes and merge if they look good.")
   } catch (error: any) {
