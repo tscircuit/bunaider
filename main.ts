@@ -10,6 +10,7 @@ import { getRepoInfo } from "./lib/getRepoInfo"
 import { fixIssue } from "./lib/fixIssue"
 import { isIssueOrPr } from "./lib/isIssueOrPr"
 import { fixPr } from "./lib/fixPr"
+import { scanPullRequestComments } from "./lib/scanPullRequestComments"
 
 program
   .name("bunaider")
