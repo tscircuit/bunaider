@@ -18,7 +18,7 @@ export async function createPullRequest(branchName, issueNumber, repoInfo) {
           body: body,
         })
         console.log(`Pull request created: ${pullRequest.html_url}`)
-        return
+        return pullRequest.html_url
       } catch (octoError: any) {
         console.error(
           "Error creating pull request with Octokit:",
@@ -34,8 +34,9 @@ export async function createPullRequest(branchName, issueNumber, repoInfo) {
     const shellCmd = `gh pr create --title ${escapeShell(title)} --body ${escapedBody} --base main`
     console.log("Executing:", shellCmd)
     const result = execSync(shellCmd, { stdio: "inherit", env: process.env })
-    console.log("Pull request created. Please check your GitHub repository.")
-    console.log(result.toString())
+    const prUrl = result.toString().trim()
+    console.log(`Pull request created: ${prUrl}`)
+    return prUrl
   } catch (error: any) {
     console.error("Error creating pull request:", error.message)
     if (error.response) {
