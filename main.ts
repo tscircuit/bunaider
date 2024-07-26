@@ -5,6 +5,7 @@ import { execSync } from "node:child_process"
 import * as fs from "node:fs"
 import * as path from "node:path"
 import { Octokit } from "@octokit/rest"
+import packageJson from "./package.json" assert { type: "json" }
 
 function escapeShell(cmd) {
   return '"' + cmd.replace(/(["$`\\])/g, "\\$1") + '"'
@@ -75,7 +76,7 @@ async function createPullRequest(branchName, issueNumber, repoInfo) {
 program
   .name("bunaider")
   .description("CLI to set up and manage aider")
-  .version("1.0.0")
+  .version(packageJson.version)
 
 program
   .command("init")
