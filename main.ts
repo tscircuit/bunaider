@@ -53,7 +53,10 @@ program
 
     const repoInfo = await getRepoInfo()
 
-    const isIssue = await isIssueOrPr(issueNumber, repoInfo)
+    const isIssue = (await isIssueOrPr(issueNumber, repoInfo)) === "issue"
+    console.log(
+      `Determined #${issueNumber} is ${isIssue ? "an issue" : "a pull request"}`,
+    )
 
     if (isIssue) {
       await fixIssue(issueNumber, repoInfo)
