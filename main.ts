@@ -9,6 +9,7 @@ import packageJson from "./package.json"
 import { getRepoInfo } from "./lib/getRepoInfo"
 import { fixIssue } from "./lib/fixIssue"
 import { isIssueOrPr } from "./lib/isIssueOrPr"
+import { fixPr } from "./lib/fixPr"
 
 program
   .name("bunaider")
@@ -55,6 +56,8 @@ program
 
     if (isIssue) {
       await fixIssue(issueNumber, repoInfo)
+    } else {
+      await fixPr(issueNumber, repoInfo)
     }
   })
 
