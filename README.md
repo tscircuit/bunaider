@@ -2,7 +2,9 @@
 
 ![image](https://github.com/user-attachments/assets/b11a43ac-6e28-4aea-9e3c-ff41f1dbce8a)
 
-Bunaider is a powerful tool that combines [bun](https://github.com/oven-sh/bun) and [aider](https://aider.chat) to automatically address GitHub issues. It streamlines the process of fixing issues by leveraging AI-assisted coding.
+`bunaider` combines [bun](https://github.com/oven-sh/bun) and [aider](https://aider.chat) to automatically fix GitHub issues. It streamlines the process of fixing issues by leveraging AI-assisted coding.
+
+You can use `bunaider` to automatically fix github issues.
 
 ## Features
 
