@@ -58,21 +58,33 @@ async function createPullRequest(branchName, issueNumber, repoInfo) {
   const title = `Fix for issue #${issueNumber}`
   const body = `This pull request addresses issue #${issueNumber}.\n\nChanges were made automatically by aider. Please review the changes carefully before merging.`
 
-  if (repoInfo.useOctokit) {
-    const { data: pullRequest } = await repoInfo.octokit.pulls.create({
-      owner: repoInfo.owner,
-      repo: repoInfo.repo,
-      title: title,
-      head: branchName,
-      base: "main",
-      body: body,
-    })
-    console.log(`Pull request created: ${pullRequest.html_url}`)
-  } else {
-    execSync(`gh pr create --title "${title}" --body "${body}" --base main`, {
-      stdio: "inherit",
-    })
-    console.log("Pull request created. Please check your GitHub repository.")
+  try {
+    if (repoInfo.useOctokit) {
+      console.log("Creating pull request using Octokit...")
+      const { data: pullRequest } = await repoInfo.octokit.pulls.create({
+        owner: repoInfo.owner,
+        repo: repoInfo.repo,
+        title: title,
+        head: branchName,
+        base: "main",
+        body: body,
+      })
+      console.log(`Pull request created: ${pullRequest.html_url}`)
+    } else {
+      console.log("Creating pull request using GitHub CLI...")
+      const result = execSync(
+        `gh pr create --title "${title}" --body "${body}" --base main`,
+        { stdio: "inherit" },
+      )
+      console.log("Pull request created. Please check your GitHub repository.")
+      console.log(result.toString())
+    }
+  } catch (error: any) {
+    console.error("Error creating pull request:", error.message)
+    if (error.response) {
+      console.error("API response:", error.response.data)
+    }
+    throw error
   }
 }
 
