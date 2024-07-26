@@ -30,6 +30,7 @@ export async function fixPr(prNumber, repoInfo) {
 
     // Make sure we're on the PR branch
     try {
+      execSync("git fetch")
       execSync(`git checkout ${pr.headRefName}`)
     } catch (error: any) {
       console.error("Error checking out the PR branch:", error.message)
