@@ -150,6 +150,9 @@ program
         process.exit(1)
       }
 
+      // Push the branch to the remote at branchName
+      execSync(`git push -f origin ${branchName}`)
+
       await createPullRequest(branchName, issueNumber, repoInfo)
 
       console.log("Please review the changes and merge if they look good.")
