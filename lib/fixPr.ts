@@ -48,7 +48,7 @@ export async function fixPr(prNumber, repoInfo) {
     // 4. Construct a message for aider
     let aiderMessage = `Fixing PR #${prNumber}: ${pr.title}\n\n`
     if (issueInfo) {
-      aiderMessage += `Original Issue: ${issueInfo.title}\n${issueInfo.body}\n\n`
+      aiderMessage += `Original Issue #${issueNumber}: ${issueInfo.title}\n${issueInfo.body}\n\n`
     }
     aiderMessage += `PR Description:\n${pr.body}\n\n`
     if (aiderComments.length > 0) {

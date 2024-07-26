@@ -47,7 +47,7 @@ program
 
 program
   .command("fix <issue-or-pr-number>")
-  .description("Load a github issue and attempt to solve with aider")
+  .description("Load a github issue or PR and attempt to solve with aider")
   .action(async (issueNumber) => {
     console.log(`Attempting to fix issue/pr #${issueNumber}...`)
 
@@ -61,7 +61,19 @@ program
     if (isIssue) {
       await fixIssue(issueNumber, repoInfo)
     } else {
-      await fixPr(issueNumber, repoInfo)
+      // Check if the PR has "Request Changes" with "aider: " in the comment
+      const comments = await scanPullRequestComments(issueNumber, repoInfo)
+      const hasRequestChanges = comments.some(
+        (comment) =>
+          comment.body.startsWith("aider: ") &&
+          comment.state === "CHANGES_REQUESTED"
+      )
+
+      if (hasRequestChanges) {
+        await fixPr(issueNumber, repoInfo)
+      } else {
+        console.log("No 'Request Changes' comments with 'aider: ' prefix found. Skipping PR fix.")
+      }
     }
   })
 

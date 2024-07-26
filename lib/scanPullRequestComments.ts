@@ -17,5 +17,10 @@ export async function scanPullRequestComments(prNumber, repoInfo) {
     comments = JSON.parse(commentsJson).comments
   }
 
-  return comments.filter((comment) => comment.body.startsWith("aider: "))
+  return comments
+    .filter((comment) => comment.body.startsWith("aider: "))
+    .map((comment) => ({
+      ...comment,
+      body: `${comment.path}: ${comment.body}`,
+    }))
 }
