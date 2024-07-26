@@ -30,18 +30,19 @@ export async function fixPr(prNumber, repoInfo) {
     // 2. Get all the review comments that start with "aider: "
     const comments = await scanPullRequestComments(prNumber, repoInfo)
     const aiderComments = comments
-      .filter((comment) => comment.body.startsWith("aider: "))
+      .filter((comment) => comment.body.includes("aider: "))
       .map((comment) => {
         // Add filename to to the comment
-        const filename = comment.path
+        const filename = comment.path ?? ""
         return `${filename}: ${comment.body.substring(7)}`
       }) // Remove "aider: " prefix
 
     // 3. Get the original issue the PR is fixing
     const issueNumberMatch = pr.body.match(/#(\d+)/)
     let issueInfo: any = null
+    let issueNumber: number | null = null
     if (issueNumberMatch) {
-      const issueNumber = issueNumberMatch[1]
+      issueNumber = issueNumberMatch[1]
       issueInfo = await getIssueInfo(issueNumber, repoInfo)
     }
 

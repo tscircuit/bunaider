@@ -11,6 +11,7 @@ import { fixIssue } from "./lib/fixIssue"
 import { isIssueOrPr } from "./lib/isIssueOrPr"
 import { fixPr } from "./lib/fixPr"
 import { scanPullRequestComments } from "./lib/scanPullRequestComments"
+import ms from "ms"
 
 program
   .name("bunaider")
@@ -65,14 +66,23 @@ program
       const comments = await scanPullRequestComments(issueNumber, repoInfo)
       const hasRequestChanges = comments.some(
         (comment) =>
-          comment.body.startsWith("aider: ") &&
-          comment.state === "CHANGES_REQUESTED"
+          comment.body.includes("aider:") &&
+          // Less than 5 minutes old
+          new Date(comment.submittedAt).valueOf() >
+            ms(
+              process.env.BUNAIDER_STALE_COMMENT_TIME || Date.now() - 5 * 60000,
+            ),
       )
 
       if (hasRequestChanges) {
+        console.log(
+          "Recent comments with 'aider:' text found. Attempting PR fix.",
+        )
         await fixPr(issueNumber, repoInfo)
       } else {
-        console.log("No 'Request Changes' comments with 'aider: ' prefix found. Skipping PR fix.")
+        console.log(
+          "No recent comments with 'aider:' text found. Skipping PR fix.",
+        )
       }
     }
   })
