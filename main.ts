@@ -60,31 +60,46 @@ async function createPullRequest(branchName, issueNumber, repoInfo) {
 
   try {
     if (repoInfo.useOctokit) {
-      console.log("Creating pull request using Octokit...")
-      const { data: pullRequest } = await repoInfo.octokit.pulls.create({
-        owner: repoInfo.owner,
-        repo: repoInfo.repo,
-        title: title,
-        head: branchName,
-        base: "main",
-        body: body,
-      })
-      console.log(`Pull request created: ${pullRequest.html_url}`)
-    } else {
-      console.log("Creating pull request using GitHub CLI...")
-      const result = execSync(
-        `gh pr create --title "${title}" --body "${body}" --base main`,
-        { stdio: "inherit" },
-      )
-      console.log("Pull request created. Please check your GitHub repository.")
-      console.log(result.toString())
+      console.log("Attempting to create pull request using Octokit...")
+      try {
+        const { data: pullRequest } = await repoInfo.octokit.pulls.create({
+          owner: repoInfo.owner,
+          repo: repoInfo.repo,
+          title: title,
+          head: branchName,
+          base: "main",
+          body: body,
+        })
+        console.log(`Pull request created: ${pullRequest.html_url}`)
+        return
+      } catch (octoError: any) {
+        console.error(
+          "Error creating pull request with Octokit:",
+          octoError.message,
+        )
+        console.log("Falling back to GitHub CLI...")
+      }
     }
+
+    // If Octokit fails or isn't used, try GitHub CLI
+    console.log("Creating pull request using GitHub CLI...")
+    const result = execSync(
+      `gh pr create --title "${title}" --body "${body}" --base main`,
+      { stdio: "inherit" },
+    )
+    console.log("Pull request created. Please check your GitHub repository.")
+    console.log(result.toString())
   } catch (error: any) {
     console.error("Error creating pull request:", error.message)
     if (error.response) {
       console.error("API response:", error.response.data)
     }
-    throw error
+    console.log(
+      "Unable to create pull request automatically. Please create it manually:",
+    )
+    console.log(`Branch name: ${branchName}`)
+    console.log(`Title: ${title}`)
+    console.log(`Body: ${body}`)
   }
 }
 
