@@ -69,6 +69,8 @@ jobs:
       - name: Install bunaider
         run: bun install -g bunaider
 
+      - run: bunaider init
+
       - name: Run bunaider fix
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
