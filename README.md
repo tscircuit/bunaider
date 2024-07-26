@@ -19,12 +19,6 @@ You can use `bunaider` to automatically fix github issues.
 npm install -g bunaider
 ```
 
-Or if you prefer using bun:
-
-```bash
-bun install -g bunaider
-```
-
 ## Usage
 
 ```bash
