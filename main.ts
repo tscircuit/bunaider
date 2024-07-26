@@ -71,8 +71,7 @@ program
           // Less than 5 minutes old
           comment.submittedAt &&
           new Date(comment.submittedAt).valueOf() >
-            Date.now() -
-              ms(process.env.BUNAIDER_STALE_COMMENT_TIME || 5 * 60000),
+            Date.now() - ms(process.env.BUNAIDER_STALE_COMMENT_TIME || "5m"),
       )
 
       if (hasRequestChanges) {
