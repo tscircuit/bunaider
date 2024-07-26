@@ -17,7 +17,11 @@ async function getRepoInfo() {
       .toString()
       .trim()
     const [, owner, repo] =
-      repoUrl.match(/github\.com[:/](.+)\/(.+)\.git$/) ?? []
+      repoUrl.match(/github\.com[:/](.+)\/(.+)(\.git)?$/) ?? []
+    if (!owner || !repo) {
+      console.error(`Could not parse GitHub repository URL. "${repoUrl}"`)
+      process.exit(1)
+    }
     return { owner, repo, useOctokit: true, octokit }
   }
   try {
