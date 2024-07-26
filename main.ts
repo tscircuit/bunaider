@@ -5,7 +5,7 @@ import { execSync } from "node:child_process"
 import * as fs from "node:fs"
 import * as path from "node:path"
 import { Octokit } from "@octokit/rest"
-import packageJson from "./package.json" assert { type: "json" }
+import packageJson from "./package.json"
 
 function escapeShell(cmd) {
   return '"' + cmd.replace(/(["$`\\])/g, "\\$1") + '"'
