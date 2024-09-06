@@ -13,11 +13,21 @@ import { fixPr } from "./lib/fixPr"
 import { scanPullRequestComments } from "./lib/scanPullRequestComments"
 import ms from "ms"
 import { getContextFiles } from "./lib/getContextFiles"
+import { getIssueInfo } from "./lib/getIssueInfo"
 
 program
   .name("bunaider")
   .description("CLI to set up and manage aider")
   .version(packageJson.version)
+
+program
+  .command("get-issue-info <issue-number>")
+  .description("Get information about a GitHub issue")
+  .action(async (issueNumber) => {
+    const repoInfo = await getRepoInfo()
+    const issueInfo = await getIssueInfo(issueNumber, repoInfo)
+    console.log(JSON.stringify(issueInfo, null, 2))
+  })
 
 program
   .command("init")
