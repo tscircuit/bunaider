@@ -1,8 +1,10 @@
 import { execSync } from "child_process"
 import { escapeShell } from "./escapeShell"
+import { getIssueInfo } from "./getIssueInfo"
 
 export async function createPullRequest(branchName, issueNumber, repoInfo) {
-  const title = `Fix for issue #${issueNumber}`
+  const { title: issueTitle } = await getIssueInfo(issueNumber, repoInfo)
+  const title = `fix: ${issueTitle}`
   const body = `This pull request addresses issue #${issueNumber}.\n\nChanges were made automatically by aider. Please review the changes carefully before merging.`
 
   try {
