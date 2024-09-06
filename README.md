@@ -27,6 +27,9 @@ bunaider init
 
 # Attempt to fix a GitHub issue
 bunaider fix <issue-number>
+
+# List all files that will be automatically added to the context
+bunaider list-context
 ```
 
 ## Configuration
