@@ -1,5 +1,6 @@
-import { Glob } from "bun"
+import { glob } from "glob"
 import fs from "fs"
+import path from "path"
 
 export async function getContextFiles(): Promise<string[]> {
   const files: string[] = []
@@ -34,11 +35,11 @@ export async function getContextFiles(): Promise<string[]> {
     .filter((dirName) => !shouldIgnore(dirName))
 
   // Scan for TypeScript or tsx files
-  const tsFiles = new Glob(`{${sourceDirs.join(",")}}**/*.{ts,tsx}`)
-  for await (const file of tsFiles.scan({
+  const tsFiles = await glob(`{${sourceDirs.join(",")}}**/*.{ts,tsx}`, {
     dot: false,
-    onlyFiles: true,
-  })) {
+    nodir: true,
+  })
+  for (const file of tsFiles) {
     // console.log("file", file)
     if (!shouldIgnore(file)) {
       files.push(file)
