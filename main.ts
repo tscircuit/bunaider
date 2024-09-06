@@ -12,6 +12,7 @@ import { isIssueOrPr } from "./lib/isIssueOrPr"
 import { fixPr } from "./lib/fixPr"
 import { scanPullRequestComments } from "./lib/scanPullRequestComments"
 import ms from "ms"
+import { getContextFiles } from "./lib/getContextFiles"
 
 program
   .name("bunaider")
@@ -85,6 +86,17 @@ program
         )
       }
     }
+  })
+
+program
+  .command("list-context")
+  .description("List all files that will be automatically added to the context")
+  .action(async () => {
+    console.log(
+      "Listing files that will be automatically added to the context:",
+    )
+    const contextFiles = await getContextFiles()
+    contextFiles.forEach((file) => console.log(file))
   })
 
 program.parse(process.argv)
