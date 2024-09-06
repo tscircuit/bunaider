@@ -10,7 +10,7 @@
     "bunaider": "dist/main.js"
   },
   "scripts": {
-    "build": "tsup main.ts --dts --sourcemap --format esm"
+    "build": "tsup-node main.ts --dts --sourcemap --format esm"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.8.3",
