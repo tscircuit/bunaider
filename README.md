@@ -41,6 +41,15 @@ For GitHub integration, you can use either:
 - GitHub CLI: Ensure `gh` is installed and authenticated
 - `GITHUB_TOKEN`: Set this environment variable with your GitHub personal access token
 
+### Automatic Context Addition
+
+Bunaider automatically adds the following to the context:
+
+- All TypeScript files in the project, unless they are listed in `.aiderignore`
+- The `README.md` file
+
+To exclude specific TypeScript files or directories from being added to the context, create a `.aiderignore` file in your project root and list the files or directories you want to ignore.
+
 ## GitHub Actions Integration
 
 Bunaider is designed to work seamlessly with GitHub Actions. Here are two example workflows: one for automatically creating a pull request for any issue labeled with 'aider', and another for responding to pull request review comments.
