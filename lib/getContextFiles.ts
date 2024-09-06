@@ -11,6 +11,7 @@ export async function getContextFiles(): Promise<string[]> {
 
   // Function to check if a file should be ignored
   const shouldIgnore = (file: string) => {
+    if (file.includes("node_modules")) return true
     return ignorePatterns.some(pattern => {
       const regexPattern = pattern
         .replace(/\./g, '\\.')
@@ -20,9 +21,12 @@ export async function getContextFiles(): Promise<string[]> {
     });
   };
 
-  // Scan for TypeScript files
-  const tsFiles = new Glob("**/*.ts");
-  for await (const file of tsFiles) {
+  // Scan for TypeScript or tsx files
+  const tsFiles = new Glob("**/*.ts **/*.tsx")
+  for await (const file of tsFiles.scan({
+    dot: false,
+    onlyFiles: true,
+  })) {
     if (!shouldIgnore(file)) {
       files.push(file);
     }
