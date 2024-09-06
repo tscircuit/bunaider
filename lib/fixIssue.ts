@@ -3,6 +3,7 @@ import { getIssueInfo } from "./getIssueInfo"
 import { escapeShell } from "./escapeShell"
 import { createPullRequest } from "./createPullRequest"
 import { commentOnIssue } from "./commentOnIssue"
+import { getContextFiles } from "./getContextFiles"
 
 export const fixIssue = async (issueNumber, repoInfo) => {
   try {
@@ -12,9 +13,13 @@ export const fixIssue = async (issueNumber, repoInfo) => {
     const issueContent = `Issue #${issueNumber}: ${title}\n\n${body}`
     console.log("Issue content:", issueContent)
 
+    console.log("Getting context files...")
+    const contextFiles = await getContextFiles()
+    console.log(`Found ${contextFiles.length} context files`)
+
     console.log("Running aider to attempt a fix...")
     const escapedIssueContent = escapeShell(issueContent)
-    const aiderCommand = `aider --yes --message ${escapedIssueContent}`
+    const aiderCommand = `aider --yes --message ${escapedIssueContent} ${contextFiles.map(file => escapeShell(file)).join(' ')}`
 
     execSync(aiderCommand, {
       stdio: "inherit",

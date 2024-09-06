@@ -4,6 +4,7 @@ import { getIssueInfo } from "./getIssueInfo"
 import { scanPullRequestComments } from "./scanPullRequestComments"
 import { configureOrigin } from "./configureOrigin"
 import { simpleGit, type SimpleGit } from "simple-git"
+import { getContextFiles } from "./getContextFiles"
 
 export async function fixPr(prNumber, repoInfo) {
   try {
@@ -74,9 +75,13 @@ export async function fixPr(prNumber, repoInfo) {
     const diff = execSync(`gh pr diff ${prNumber}`).toString()
     aiderMessage += `\n\nPR Diff:\n${diff}`
 
+    console.log("Getting context files...")
+    const contextFiles = await getContextFiles()
+    console.log(`Found ${contextFiles.length} context files`)
+
     console.log("Running aider to attempt a fix...")
     const escapedAiderMessage = escapeShell(aiderMessage)
-    const aiderCommand = `aider --yes --message ${escapedAiderMessage}`
+    const aiderCommand = `aider --yes --message ${escapedAiderMessage} ${contextFiles.map(file => escapeShell(file)).join(' ')}`
 
     execSync(aiderCommand, {
       stdio: "inherit",
