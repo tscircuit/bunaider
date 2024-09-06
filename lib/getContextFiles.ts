@@ -51,5 +51,9 @@ export async function getContextFiles(): Promise<string[]> {
     files.push("README.md")
   }
 
+  if (fs.existsSync("docs") && !shouldIgnore("docs")) {
+    files.push("docs")
+  }
+
   return files
 }
