@@ -34,8 +34,8 @@ export async function getContextFiles(): Promise<string[]> {
     .filter((dirName) => dirName !== "node_modules" && dirName !== "dist")
     .filter((dirName) => !shouldIgnore(dirName))
 
-  // Scan for TypeScript or tsx files
-  const tsFiles = await glob(`{${sourceDirs.join(",")}}**/*.{ts,tsx}`, {
+  // Scan for TypeScript, md or tsx files
+  const tsFiles = await glob(`{${sourceDirs.join(",")}}**/*.{ts,tsx,md}`, {
     dot: false,
     nodir: true,
   })
@@ -49,10 +49,6 @@ export async function getContextFiles(): Promise<string[]> {
   // Add README.md if it exists
   if (fs.existsSync("README.md") && !shouldIgnore("README.md")) {
     files.push("README.md")
-  }
-
-  if (fs.existsSync("docs") && !shouldIgnore("docs")) {
-    files.push("docs")
   }
 
   return files
