@@ -42,13 +42,7 @@ export async function fixPr(prNumber, repoInfo) {
 
     // 2. Get all the review comments that start with "aider: "
     const comments = await scanPullRequestComments(prNumber, repoInfo)
-    const aiderComments = comments
-      .filter((comment) => comment.body.includes("aider: "))
-      .map((comment) => {
-        // Add filename to to the comment
-        const filename = (comment as any).path ?? ""
-        return `${filename ? `${filename}: ` : ""}${comment.body.substring(7)}`
-      }) // Remove "aider: " prefix
+    const reviewComments = comments.map((comment) => comment.body)
 
     // 3. Get the original issue the PR is fixing
     const issueNumberMatch = pr.body.match(/#(\d+)/)
@@ -65,8 +59,8 @@ export async function fixPr(prNumber, repoInfo) {
       aiderMessage += `Original Issue #${issueNumber}: ${issueInfo.title}\n${issueInfo.body}\n\n`
     }
     aiderMessage += `PR Description:\n${pr.body}\n\n`
-    if (aiderComments.length > 0) {
-      aiderMessage += `Review Comments:\n${aiderComments.join("\n")}\n\n`
+    if (reviewComments.length > 0) {
+      aiderMessage += `Review Comments:\n${reviewComments.join("\n")}\n\n`
     }
     aiderMessage +=
       "Please make the necessary changes to address the PR and review comments."

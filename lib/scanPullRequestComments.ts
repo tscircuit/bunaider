@@ -54,10 +54,8 @@ export async function scanPullRequestComments(prNumber, repoInfo) {
     comments = prRes.comments.concat(prRes.reviews)
   }
 
-  return comments
-    .filter((comment) => comment.body.startsWith("aider: "))
-    .map((comment) => ({
-      ...comment,
-      body: `${comment.path}: ${comment.body}`,
-    }))
+  return comments.map((comment) => ({
+    ...comment,
+    body: comment.path ? `${comment.path}: ${comment.body}` : comment.body,
+  }))
 }
